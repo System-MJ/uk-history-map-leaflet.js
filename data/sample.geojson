@@ -1,0 +1,41 @@
+﻿{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hadrian's Wall",
+        "category": "Roman",
+        "year": 128
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-2.33, 55.01]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tower of London",
+        "category": "Medieval",
+        "year": 1078
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-0.076, 51.508]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stonehenge",
+        "category": "Monument",
+        "year": -2500
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-1.826, 51.178]
+      }
+    }
+  ]
+}
