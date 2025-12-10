@@ -9,30 +9,51 @@
   width: 100%;
 }
 
+/* Sidebar */
+
 #sidebar {
   position: absolute;
   top: 10px;
   left: 10px;
   z-index: 1000;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.95);
   padding: 10px 15px;
   border-radius: 8px;
   max-height: 90%;
   overflow-y: auto;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
+
+#sidebar h2 {
+  margin-top: 0;
+}
+
+.filter-group {
+  margin-bottom: 12px;
+}
+
+/* Timeline box */
 
 #timelineBox {
   position: absolute;
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255,255,255,0.95);
+  background: rgba(255, 255, 255, 0.95);
   padding: 10px 15px;
   border-radius: 8px;
   z-index: 1000;
   text-align: center;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+#timelineBox h3 {
+  margin-top: 0;
+}
+
+#timelineBox input[type="range"] {
+  width: 220px;
+  margin: 4px 0;
 }
 
 #yearRangeLabel {
@@ -54,15 +75,17 @@
   background-color: #2f58cc;
 }
 
+/* Legend */
+
 #legend {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.95);
   padding: 10px;
   border-radius: 8px;
   z-index: 1000;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .legend-row {
@@ -87,6 +110,8 @@
   height: 12px;
 }
 
+/* Markers */
+
 .marker-circle {
   width: 20px;
   height: 20px;
@@ -97,20 +122,23 @@
   align-items: center;
   justify-content: center;
 }
+
 .marker-icon {
   width: 14px;
   height: 14px;
 }
+
+/* Loading overlay */
 
 #loadingOverlay {
   position: absolute;
   inset: 0;
   z-index: 1500;
   background: rgba(255, 255, 255, 0.7);
-  display: flex;              /* visible by default; JS will hide it */
+  display: flex; /* visible by default; JS will hide it */
   align-items: center;
   justify-content: center;
-  pointer-events: none;       /* don’t block map clicks once hidden via JS */
+  pointer-events: none;
 }
 
 #loadingOverlay.hidden {
@@ -125,4 +153,3 @@
   font-weight: bold;
   font-size: 14px;
 }
-

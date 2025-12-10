@@ -16,6 +16,7 @@
 </head>
 <body>
 
+  <!-- Sidebar with filters -->
   <div id="sidebar">
     <h2>Filters</h2>
 
@@ -41,29 +42,42 @@
     </div>
   </div>
 
+  <!-- Map -->
   <div id="map"></div>
 
-<div id="map"></div>
-
-<!-- Loading overlay -->
-<div id="loadingOverlay">
-  <div class="loading-box">
-    Loading monuments…
+  <!-- Loading overlay -->
+  <div id="loadingOverlay">
+    <div class="loading-box">
+      Loading monuments…
+    </div>
   </div>
-</div>
 
-<div id="legend"></div>
-
+  <!-- Legend -->
   <div id="legend"></div>
 
+  <!-- Timeline box with dual slider -->
   <div id="timelineBox">
     <h3>Timeline</h3>
 
     <label for="yearMinSlider">From:</label>
-    <input type="range" id="yearMinSlider" min="-4000" max="2025" value="-4000" step="1" />
+    <input
+      type="range"
+      id="yearMinSlider"
+      min="-4000"
+      max="2025"
+      value="-4000"
+      step="1"
+    />
 
     <label for="yearMaxSlider">To:</label>
-    <input type="range" id="yearMaxSlider" min="-4000" max="2025" value="2025" step="1" />
+    <input
+      type="range"
+      id="yearMaxSlider"
+      min="-4000"
+      max="2025"
+      value="2025"
+      step="1"
+    />
 
     <div id="yearRangeLabel">-4000 – 2025</div>
 

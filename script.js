@@ -47,10 +47,9 @@ const periodColors = {
     'Unknown': '#555555'
 };
 
-// Period icons for legend (time periods, not site types)
 const periodIcons = {
     'Prehistoric': 'icons/stonehenge-svgrepo-com.svg',
-    'Bronze Age': null, // circle only for now
+    'Bronze Age': null,
     'Iron Age': 'icons/Triskele-Symbol-spiral.svg',
     'Early Medieval': 'icons/helmet-svgrepo-com.svg',
     'Roman': 'icons/helmet-roman-svgrepo-com.svg',
@@ -58,7 +57,7 @@ const periodIcons = {
     'Post-Medieval': 'icons/fleur-de-lis-1-svgrepo-com.svg'
 };
 
-// Site-type icons (used on the markers)
+// Site-type icons (used on markers)
 const typeIcons = {
     'Fortification': 'icons/castle-svgrepo-com.svg',
     'Religious Site': 'icons/celtic-cross-1-svgrepo-com.svg',
@@ -70,17 +69,14 @@ const typeIcons = {
 // Sliders, filters, loading overlay
 // --------------------------------------------------------
 
-// Sliders & label
 const yearMinSlider = document.getElementById('yearMinSlider');
 const yearMaxSlider = document.getElementById('yearMaxSlider');
 const yearRangeLabel = document.getElementById('yearRangeLabel');
 const resetYearRangeBtn = document.getElementById('resetYearRangeBtn');
 
-// Filter checkboxes
 const periodChecks = document.querySelectorAll('.periodCheck');
 const groupChecks = document.querySelectorAll('.groupCheck');
 
-// Loading overlay
 const loadingOverlay = document.getElementById('loadingOverlay');
 
 // Global time bounds
@@ -99,12 +95,10 @@ function hideLoading() {
     }
 }
 
-// keep sliders valid and update label
 function updateYearRange() {
     let minVal = Number(yearMinSlider.value);
     let maxVal = Number(yearMaxSlider.value);
 
-    // ensure min <= max (swap if crossed)
     if (minVal > maxVal) {
         const tmp = minVal;
         minVal = maxVal;
@@ -117,7 +111,6 @@ function updateYearRange() {
     filterData();
 }
 
-// reset to full range
 function resetYearRange() {
     if (!yearMinSlider || !yearMaxSlider) return;
     yearMinSlider.value = GLOBAL_MIN_YEAR;
@@ -125,7 +118,6 @@ function resetYearRange() {
     updateYearRange();
 }
 
-// attach events
 if (yearMinSlider && yearMaxSlider) {
     yearMinSlider.addEventListener('input', updateYearRange);
     yearMaxSlider.addEventListener('input', updateYearRange);
@@ -137,7 +129,6 @@ if (resetYearRangeBtn) {
 periodChecks.forEach(cb => cb.addEventListener('change', filterData));
 groupChecks.forEach(cb => cb.addEventListener('change', filterData));
 
-// Initialise label (and slider values)
 if (yearMinSlider && yearMaxSlider) {
     resetYearRange();
 }
@@ -148,10 +139,9 @@ if (yearMinSlider && yearMaxSlider) {
 
 let siteLayer = null;
 
-// Show loading while we fetch
 showLoading();
 
-fetch('data/historic_sites.geojson') // cadw_sam_enhanced.geojson renamed
+fetch('data/cadw_sam_enhanced.geojson')
     .then(r => r.json())
     .then(data => {
         siteLayer = L.geoJSON(data, {
@@ -160,7 +150,7 @@ fetch('data/historic_sites.geojson') // cadw_sam_enhanced.geojson renamed
         }).addTo(map);
 
         buildLegend();
-        filterData(); // initial filter
+        filterData();
         hideLoading();
     })
     .catch(err => {
@@ -264,17 +254,12 @@ function filterData() {
 
         let matchYear = false;
 
-        // Priority 1 — full range: [start_year, end_year] overlaps [minYear, maxYear]
         if (start !== null && end !== null) {
             const overlaps = (end >= minYear) && (start <= maxYear);
             matchYear = overlaps;
-        }
-        // Priority 2 — only mid_year known
-        else if (mid !== null) {
+        } else if (mid !== null) {
             matchYear = (mid >= minYear && mid <= maxYear);
-        }
-        // Priority 3 — no date data: show by default (change to false to hide)
-        else {
+        } else {
             matchYear = true;
         }
 
@@ -302,7 +287,7 @@ function buildLegend() {
     legend.innerHTML = '<strong>Time Periods</strong><br>';
 
     Object.keys(periodColors).forEach(period => {
-        if (period === 'Unknown') return; // optional: skip Unknown in legend
+        if (period === 'Unknown') return;
 
         const color = periodColors[period];
         const iconSrc = periodIcons[period];
