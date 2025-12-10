@@ -10,41 +10,50 @@
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-
     <!-- Leaflet JS -->
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
     </script>
-
 </head>
 <body>
 
-<h2>UK Historical Timeline Map</h2>
+<!-- Sidebar -->
+<div id="sidebar">
+    <h2>Filters</h2>
 
-<div id="controls">
-    <label>
-        Year:
-        <input type="range" id="yearSlider" min="0" max="2025" value="2025">
-    </label>
-    <span id="yearLabel">2025</span>
+    <div class="filter-group">
+        <h3>Time Period</h3>
+        <label><input type="checkbox" class="periodCheck" value="Prehistoric" checked> Prehistoric</label><br>
+        <label><input type="checkbox" class="periodCheck" value="Iron Age" checked> Iron Age</label><br>
+        <label><input type="checkbox" class="periodCheck" value="Early Medieval" checked> Early Medieval</label><br>
+        <label><input type="checkbox" class="periodCheck" value="Roman" checked> Roman</label><br>
+        <label><input type="checkbox" class="periodCheck" value="Medieval" checked> Medieval</label><br>
+        <label><input type="checkbox" class="periodCheck" value="Post-Medieval" checked> Post-Medieval</label><br>
+    </div>
 
-    <br><br>
-
-    <label>
-        Category:
-        <select id="categoryFilter">
-            <option value="all">All</option>
-            <option value="Roman">Roman</option>
-            <option value="Medieval">Medieval</option>
-            <option value="Castle">Castle</option>
-            <option value="Monument">Monument</option>
-        </select>
-    </label>
+    <div class="filter-group">
+        <h3>Feature Group</h3>
+        <label><input type="checkbox" class="groupCheck" value="Barrow" checked> Barrow</label><br>
+        <label><input type="checkbox" class="groupCheck" value="Standing Stone(s)" checked> Standing Stone(s)</label><br>
+        <label><input type="checkbox" class="groupCheck" value="Fortification" checked> Fortification</label><br>
+        <label><input type="checkbox" class="groupCheck" value="Burial" checked> Burial</label><br>
+        <label><input type="checkbox" class="groupCheck" value="Religious Site" checked> Religious Site</label><br>
+        <label><input type="checkbox" class="groupCheck" value="Settlement" checked> Settlement</label><br>
+    </div>
 </div>
 
+<!-- Map -->
 <div id="map"></div>
 
-<script src="script.js"></script>
+<!-- Legend (uses period SVGs) -->
+<div id="legend"></div>
 
+<!-- Bottom timeline slider -->
+<div id="timelineBox">
+    <input type="range" id="yearSlider" min="-3000" max="2025" value="2025">
+    <span id="yearLabel">2025</span>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
