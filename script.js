@@ -98,7 +98,7 @@ function derivePeriod(props) {
 
 let siteLayer = null;
 
-fetch('data/historic_sites.geojson')
+fetch('data/cadw_scheduled_monuments_points.geojson')
     .then(r => r.json())
     .then(data => {
         siteLayer = L.geoJSON(data, {
