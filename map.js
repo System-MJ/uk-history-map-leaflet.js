@@ -10,25 +10,37 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 
 // -------------------------------------------------------
-// LOAD GEOJSON (NEW processed file)
+// LOAD GEOJSON DATA
 // -------------------------------------------------------
 
 let siteLayer;
 
 fetch("data/historic_sites.geojson")
-    .then(r => r.json())
+    .then(response => {
+        if (!response.ok) {
+            console.error("❌ GeoJSON failed to load:", response.status, response.statusText);
+            alert("GeoJSON file not found.\nMake sure data/historic_sites.geojson exists in GitHub.");
+            throw new Error("File not found");
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log("✅ GeoJSON loaded:", data);
+
         siteLayer = L.geoJSON(data, {
             pointToLayer: pointIcon,
             onEachFeature: bindPopup
         }).addTo(map);
 
         filterByYear();
+    })
+    .catch(err => {
+        console.error("❌ Error loading GeoJSON:", err);
     });
 
 
 // -------------------------------------------------------
-// POINT ICONS BASED ON PERIOD
+// ICONS
 // -------------------------------------------------------
 
 function pointIcon(feature, latlng) {
@@ -45,23 +57,23 @@ function pointIcon(feature, latlng) {
 
 
 // -------------------------------------------------------
-// POPUP CONTENT
+// POPUPS
 // -------------------------------------------------------
 
 function bindPopup(feature, layer) {
     const p = feature.properties;
 
     layer.bindPopup(`
-        <strong>${p.Name || "Unnamed Site"}</strong><br>
+        <strong>${p.Name || "Unnamed site"}</strong><br>
         Type: ${p.SiteType}<br>
         Period: ${p.Period}<br>
-        ${p.PeriodStart != null ? `Dates: ${p.PeriodStart} → ${p.PeriodEnd}` : ""}
+        ${p.PeriodStart ? `Dates: ${p.PeriodStart} → ${p.PeriodEnd}` : ""}
     `);
 }
 
 
 // -------------------------------------------------------
-// SLIDER HANDLING
+// SLIDER FILTER
 // -------------------------------------------------------
 
 const slider = document.getElementById("yearSlider");
@@ -70,7 +82,9 @@ const yearValue = document.getElementById("yearValue");
 slider.addEventListener("input", filterByYear);
 
 function filterByYear() {
-    const year = parseInt(slider.value);
+    if (!siteLayer) return;
+
+    const year = parseInt(slider.value, 10);
     yearValue.textContent = year;
 
     siteLayer.eachLayer(layer => {
@@ -79,13 +93,12 @@ function filterByYear() {
         const start = p.PeriodStart;
         const end = p.PeriodEnd;
 
-        // If no valid range, hide
-        if (start === null || end === null) {
+        // Hide missing periods
+        if (start == null || end == null) {
             layer.remove();
             return;
         }
 
-        // Visible only if the site covers the selected year
         if (year >= start && year <= end) {
             layer.addTo(map);
         } else {
