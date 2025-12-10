@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UK Historic Timeline Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <div id="sidebar">
+    <h2>Filters</h2>
+
+    <div class="filter-group">
+      <h3>Time Period</h3>
+      <label><input type="checkbox" class="periodCheck" value="Prehistoric" checked> Prehistoric</label><br>
+      <label><input type="checkbox" class="periodCheck" value="Bronze Age" checked> Bronze Age</label><br>
+      <label><input type="checkbox" class="periodCheck" value="Iron Age" checked> Iron Age</label><br>
+      <label><input type="checkbox" class="periodCheck" value="Roman" checked> Roman</label><br>
+      <label><input type="checkbox" class="periodCheck" value="Early Medieval" checked> Early Medieval</label><br>
+      <label><input type="checkbox" class="periodCheck" value="Medieval" checked> Medieval</label><br>
+      <label><input type="checkbox" class="periodCheck" value="Post-Medieval" checked> Post-Medieval</label><br>
+    </div>
+
+    <div class="filter-group">
+      <h3>Feature Groups</h3>
+      <label><input type="checkbox" class="groupCheck" value="Barrow" checked> Barrow</label><br>
+      <label><input type="checkbox" class="groupCheck" value="Standing Stone(s)" checked> Standing Stone(s)</label><br>
+      <label><input type="checkbox" class="groupCheck" value="Fortification" checked> Fortification</label><br>
+      <label><input type="checkbox" class="groupCheck" value="Burial" checked> Burial</label><br>
+      <label><input type="checkbox" class="groupCheck" value="Religious Site" checked> Religious Site</label><br>
+      <label><input type="checkbox" class="groupCheck" value="Settlement" checked> Settlement</label><br>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+<div id="map"></div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="loading-box">
+    Loading monuments…
+  </div>
+</div>
+
+<div id="legend"></div>
+
+  <div id="legend"></div>
+
+  <div id="timelineBox">
+    <h3>Timeline</h3>
+
+    <label for="yearMinSlider">From:</label>
+    <input type="range" id="yearMinSlider" min="-4000" max="2025" value="-4000" step="1" />
+
+    <label for="yearMaxSlider">To:</label>
+    <input type="range" id="yearMaxSlider" min="-4000" max="2025" value="2025" step="1" />
+
+    <div id="yearRangeLabel">-4000 – 2025</div>
+
+    <button id="resetYearRangeBtn">Reset to Full Range</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
