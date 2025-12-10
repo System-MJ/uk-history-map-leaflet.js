@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------
-// Base map
+// Base map setup
 // --------------------------------------------------------
 
-const map = L.map('map').setView([54.5, -3], 6);
+const map = L.map('map').setView([52.5, -3.5], 7);
 
-// OSM base map
+// OpenStreetMap base layer
 const osm = L.tileLayer(
     'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
@@ -13,7 +13,7 @@ const osm = L.tileLayer(
     }
 ).addTo(map);
 
-// Esri Satellite (optional)
+// Optional Esri satellite layer
 const esriSat = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     {
@@ -22,7 +22,7 @@ const esriSat = L.tileLayer(
     }
 );
 
-// Layer switcher
+// Layer control
 L.control.layers(
     {
         'OpenStreetMap': osm,
@@ -38,18 +38,19 @@ L.control.layers(
 
 const periodColors = {
     'Prehistoric': '#D4A017',
-    'Bronze Age': '#B87333',      // copper/bronze
+    'Bronze Age': '#B87333',
     'Iron Age': '#B86B00',
     'Early Medieval': '#C08A35',
     'Roman': '#B22222',
     'Medieval': '#1E3A8A',
-    'Post-Medieval': '#4B1D5A'
+    'Post-Medieval': '#4B1D5A',
+    'Unknown': '#555555'
 };
 
-// Period icons for legend / future UI.
-// Bronze Age has no agreed SVG yet → circle only in legend.
+// Period icons for legend (time periods, not site types)
 const periodIcons = {
     'Prehistoric': 'icons/stonehenge-svgrepo-com.svg',
+    'Bronze Age': null, // circle only for now
     'Iron Age': 'icons/Triskele-Symbol-spiral.svg',
     'Early Medieval': 'icons/helmet-svgrepo-com.svg',
     'Roman': 'icons/helmet-roman-svgrepo-com.svg',
@@ -57,70 +58,108 @@ const periodIcons = {
     'Post-Medieval': 'icons/fleur-de-lis-1-svgrepo-com.svg'
 };
 
-// Site-type icons (used on the map for some feature groups)
+// Site-type icons (used on the markers)
 const typeIcons = {
-    'Fortification': 'icons/castle-svgrepo-com.svg',          // castles / forts
-    'Religious Site': 'icons/celtic-cross-1-svgrepo-com.svg', // churches, abbeys etc.
-    'Settlement': 'icons/home-svgrepo-com.svg'                // villas, villages, manors
+    'Fortification': 'icons/castle-svgrepo-com.svg',
+    'Religious Site': 'icons/celtic-cross-1-svgrepo-com.svg',
+    'Settlement': 'icons/home-svgrepo-com.svg'
     // Barrow, Standing Stone(s), Burial, Coin Hoard → hollow circle for now
 };
 
 // --------------------------------------------------------
-// Period engine: derive period from year (with fallback)
+// Sliders & filter controls
 // --------------------------------------------------------
 
-function getPeriodFromYear(year) {
-    if (typeof year !== 'number' || isNaN(year)) return null;
+// These must exist in your HTML
+const yearMinSlider = document.getElementById('yearMinSlider');
+const yearMaxSlider = document.getElementById('yearMaxSlider');
+const yearRangeLabel = document.getElementById('yearRangeLabel');
+const resetYearRangeBtn = document.getElementById('resetYearRangeBtn');
 
-    if (year < -2500) return 'Prehistoric';
-    if (year >= -2500 && year < -800) return 'Bronze Age';
-    if (year >= -800 && year < 43) return 'Iron Age';
-    if (year >= 43 && year < 410) return 'Roman';
-    if (year >= 410 && year < 1066) return 'Early Medieval';
-    if (year >= 1066 && year < 1500) return 'Medieval';
-    // everything after 1500 goes into Post-Medieval for now
-    return 'Post-Medieval';
-}
+const periodChecks = document.querySelectorAll('.periodCheck');
+const groupChecks = document.querySelectorAll('.groupCheck');
 
-// Prefer year-based period; fall back to properties.period if needed
-function derivePeriod(props) {
-    const hasNumericYear = typeof props.year === 'number' && !isNaN(props.year);
-    if (hasNumericYear) {
-        const p = getPeriodFromYear(props.year);
-        if (p) return p;
+// Choose global time bounds (matches HTML min/max)
+const GLOBAL_MIN_YEAR = -4000;
+const GLOBAL_MAX_YEAR = 2025;
+
+// keep sliders valid and update label
+function updateYearRange() {
+    let minVal = Number(yearMinSlider.value);
+    let maxVal = Number(yearMaxSlider.value);
+
+    // ensure min <= max (swap if crossed)
+    if (minVal > maxVal) {
+        const tmp = minVal;
+        minVal = maxVal;
+        maxVal = tmp;
+        yearMinSlider.value = minVal;
+        yearMaxSlider.value = maxVal;
     }
-    return props.period || 'Unknown';
+
+    yearRangeLabel.textContent = `${minVal} – ${maxVal}`;
+    filterData();
+}
+
+// reset to full range
+function resetYearRange() {
+    yearMinSlider.value = GLOBAL_MIN_YEAR;
+    yearMaxSlider.value = GLOBAL_MAX_YEAR;
+    updateYearRange();
+}
+
+// attach events
+if (yearMinSlider && yearMaxSlider) {
+    yearMinSlider.addEventListener('input', updateYearRange);
+    yearMaxSlider.addEventListener('input', updateYearRange);
+}
+if (resetYearRangeBtn) {
+    resetYearRangeBtn.addEventListener('click', resetYearRange);
+}
+
+periodChecks.forEach(cb => cb.addEventListener('change', filterData));
+groupChecks.forEach(cb => cb.addEventListener('change', filterData));
+
+// initialise label
+if (yearMinSlider && yearMaxSlider) {
+    resetYearRange();
 }
 
 // --------------------------------------------------------
-// Load GeoJSON
+// Load GeoJSON (enhanced Cadw dataset)
 // --------------------------------------------------------
 
 let siteLayer = null;
 
-fetch('data/cadw_scheduled_monuments_points.geojson')
+fetch('data/historic_sites.geojson') // this should be your cadw_sam_enhanced.geojson renamed
     .then(r => r.json())
     .then(data => {
         siteLayer = L.geoJSON(data, {
-            pointToLayer: (feature, latlng) => makeMarker(feature, latlng),
+            pointToLayer: (feature, latlng) => createMarker(feature, latlng),
             onEachFeature: onEachSite
         }).addTo(map);
 
         buildLegend();
         filterData(); // initial filter
+    })
+    .catch(err => {
+        console.error('Error loading GeoJSON:', err);
     });
 
-// Create a divIcon marker for each feature
-function makeMarker(feature, latlng) {
+// --------------------------------------------------------
+// Marker creation & popups
+// --------------------------------------------------------
+
+function createMarker(feature, latlng) {
     const p = feature.properties || {};
-    const derivedPeriod = derivePeriod(p);
+
+    const derivedPeriod = p.derived_period || p.period || 'Unknown';
     const group = p.feature_group || null;
 
-    const color = periodColors[derivedPeriod] || '#000000';
+    const color = periodColors[derivedPeriod] || periodColors['Unknown'];
     const iconUrl = typeIcons[group] || null;
 
     const hasIcon = !!iconUrl;
-
     const html =
         `<div class="marker-circle" style="border-color:${color};">
             ${hasIcon ? `<img src="${iconUrl}" class="marker-icon" />` : ''}
@@ -138,45 +177,49 @@ function makeMarker(feature, latlng) {
     return L.marker(latlng, { icon: divIcon });
 }
 
-// Popups
 function onEachSite(feature, layer) {
     const p = feature.properties || {};
+
     const name = p.name || 'Unnamed site';
     const group = p.feature_group || 'Unknown group';
     const type = p.feature_type || '';
-    const derivedPeriod = derivePeriod(p);
-    const year = (typeof p.year === 'number' && !isNaN(p.year)) ? p.year : 'Unknown';
+    const period = p.derived_period || p.period || 'Unknown period';
+
+    const start = (typeof p.start_year === 'number') ? p.start_year : null;
+    const end = (typeof p.end_year === 'number') ? p.end_year : null;
+    const mid = (typeof p.mid_year === 'number') ? p.mid_year : null;
+
+    let dateLine = 'Date: unknown';
+    if (start !== null && end !== null) {
+        dateLine = `Date range: ${start} – ${end}`;
+    } else if (mid !== null) {
+        dateLine = `Approx. date: ${mid}`;
+    }
 
     let html = `<strong>${name}</strong><br>`;
     html += `${group}`;
     if (type) html += ` – ${type}`;
-    html += `<br>${derivedPeriod}`;
-    html += `<br>Year: ${year}`;
+    html += `<br>${period}<br>${dateLine}`;
+
+    if (p.sam_number) {
+        html += `<br>SAM: ${p.sam_number}`;
+    }
+    if (p.report_url) {
+        html += `<br><a href="${p.report_url}" target="_blank" rel="noopener">Cadw record</a>`;
+    }
 
     layer.bindPopup(html);
 }
 
 // --------------------------------------------------------
-// Filters (slider + checkboxes)
+// Filtering with dual slider (start_year–end_year range)
 // --------------------------------------------------------
-
-const yearSlider = document.getElementById('yearSlider');
-const yearLabel = document.getElementById('yearLabel');
-const periodChecks = document.querySelectorAll('.periodCheck');
-const groupChecks = document.querySelectorAll('.groupCheck');
-
-yearSlider.addEventListener('input', () => {
-    filterData();
-});
-
-periodChecks.forEach(cb => cb.addEventListener('change', filterData));
-groupChecks.forEach(cb => cb.addEventListener('change', filterData));
 
 function filterData() {
     if (!siteLayer) return;
 
-    const selectedYear = Number(yearSlider.value);
-    yearLabel.textContent = selectedYear;
+    const minYear = yearMinSlider ? Number(yearMinSlider.value) : GLOBAL_MIN_YEAR;
+    const maxYear = yearMaxSlider ? Number(yearMaxSlider.value) : GLOBAL_MAX_YEAR;
 
     const activePeriods = Array.from(periodChecks)
         .filter(cb => cb.checked)
@@ -188,31 +231,59 @@ function filterData() {
 
     siteLayer.eachLayer(layer => {
         const p = layer.feature.properties || {};
-        const derivedPeriod = derivePeriod(p);
-        const group = p.feature_group || null;
-        const year = (typeof p.year === 'number' && !isNaN(p.year)) ? p.year : null;
 
-        const matchYear = (year === null) ? true : year <= selectedYear;
-        const matchPeriod = activePeriods.length === 0 || activePeriods.includes(derivedPeriod);
-        const matchGroup = activeGroups.length === 0 || activeGroups.includes(group);
+        const period = p.derived_period || p.period || 'Unknown';
+        const group = p.feature_group || null;
+
+        const start = (typeof p.start_year === 'number') ? p.start_year : null;
+        const end = (typeof p.end_year === 'number') ? p.end_year : null;
+        const mid = (typeof p.mid_year === 'number') ? p.mid_year : null;
+
+        let matchYear = false;
+
+        // Priority 1 — full range: [start_year, end_year] overlaps [minYear, maxYear]
+        if (start !== null && end !== null) {
+            const overlaps = (end >= minYear) && (start <= maxYear);
+            matchYear = overlaps;
+        }
+        // Priority 2 — only mid_year known
+        else if (mid !== null) {
+            matchYear = (mid >= minYear && mid <= maxYear);
+        }
+        // Priority 3 — no date data: show by default (change to false to hide)
+        else {
+            matchYear = true;
+        }
+
+        const matchPeriod =
+            activePeriods.length === 0 || activePeriods.includes(period);
+        const matchGroup =
+            activeGroups.length === 0 || activeGroups.includes(group);
 
         if (matchYear && matchPeriod && matchGroup) {
             layer.addTo(map);
         } else {
-            layer.removeFrom(map);
+            map.removeLayer(layer);
         }
     });
 }
 
 // --------------------------------------------------------
-// Legend (uses period SVGs where available)
+// Legend for time periods
 // --------------------------------------------------------
 
 function buildLegend() {
     const legend = document.getElementById('legend');
+    if (!legend) return;
+
     legend.innerHTML = '<strong>Time Periods</strong><br>';
 
-    Object.entries(periodColors).forEach(([period, color]) => {
+    Object.keys(periodColors).forEach(period => {
+        if (period === 'Unknown') return; // optional: skip Unknown in legend
+
+        const color = periodColors[period];
+        const iconSrc = periodIcons[period];
+
         const row = document.createElement('div');
         row.className = 'legend-row';
 
@@ -220,7 +291,6 @@ function buildLegend() {
         marker.className = 'legend-marker';
         marker.style.borderColor = color;
 
-        const iconSrc = periodIcons[period];
         if (iconSrc) {
             const img = document.createElement('img');
             img.src = iconSrc;
